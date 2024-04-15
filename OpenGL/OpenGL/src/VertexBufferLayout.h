@@ -1,6 +1,7 @@
 #pragma once
 
 #include <vector>
+#include <cassert>
 
 #include "Renderer.h"
 
@@ -38,7 +39,7 @@ public:
 	template<typename T>
 	void Push(unsigned int count)
 	{
-		//static_assert(false);
+		assert(true);
 	}
 
 	//template specializations
