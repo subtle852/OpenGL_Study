@@ -6,10 +6,13 @@
 layout(location = 0) in vec3 position;
 layout(location = 1) in vec2 texCoord;
 layout(location = 2) in vec3 normal;
+layout(location = 3) in vec3 tangent;
+layout(location = 4) in vec3 bitangent;
 
 out vec2 v_TexCoord; //버텍스 셰이더에서 추가적으로 출력하는 데이터(varying)
 out vec3 v_Normal;
 out vec3 v_WorldPosition;
+out mat3 v_TBN;
 
 uniform mat4 u_Model; //world 변환 행렬
 uniform mat4 u_View; //카메라를 통해 변화된 View 행렬
@@ -20,10 +23,16 @@ void main()
 	gl_Position = u_Projection * u_View * u_Model * vec4(position, 1.0); // 정점 위치를 투영 행렬과 곱
 	v_TexCoord = texCoord; //vertex 변환에 따라 바뀌지 않으므로 그대로 넘겨주면 됨
 
-	//https://www.youtube.com/watch?v=d3EUd2HxsO4&app=desktop
-	v_Normal = mat3(transpose(inverse(u_Model))) * normal;
+	mat3 ivtr = transpose(inverse(mat3(u_Model)));
+	v_Normal = normalize(ivtr * normal);
+	vec3 tan = normalize(ivtr * tangent);
+	vec3 bitan = cross(v_Normal, tan);
 
 	v_WorldPosition = (u_Model * vec4(position, 1.0)).xyz; //정점의 World space 좌표
+	
+
+	//tangent space 변환 벡터
+	v_TBN = transpose(mat3(tan, bitan, v_Normal));
 };
 
 #shader fragment
@@ -55,6 +64,7 @@ struct Material
 in vec2 v_TexCoord; //버텍스 셰이더에서 넘겨받은 데이터
 in vec3 v_Normal;
 in vec3 v_WorldPosition;
+in mat3 v_TBN;
 
 uniform vec3 u_EyePosition; //specular 계산을 위한 카메라 위치
 uniform sampler2D u_Texture; //texture는 sampler2D 타입
@@ -63,22 +73,27 @@ uniform Material u_Material;
 
 uniform sampler2D u_Normal; //normal map texture 추가
 
+vec3 ToTangenSpaceVector(vec3 dir)
+{
+	return (v_TBN * dir);
+}
+
 //빛 기본 정보와 방향이 주어졌을 때, rendering eqn에 따른 색상 계산
 vec3 CalcLight(Light light, vec3 direction)
 {
 	//vec3 normal = normalize(v_Normal); //법선 벡터 normalize 필요! (안할 경우 76 line에서 잘못 계산됨)
 	
 	//normap map 텍스처가 있으면, normal을 모델의 값이 아니라 texture에서 샘플링한 값을 사용!
-	vec3 normal = texture(u_Normal, v_TexCoord).rgb; //rgb값이 벡터의 xyz component
+	vec3 normal = 2.0 * texture(u_Normal, v_TexCoord).rgb - 1.0; //rgb값이 벡터의 xyz component
 	normal = normalize(normal);
 	
 	vec3 lightAmbient = light.lightColor * light.ambientIntensity;
 	
-	vec3 lightDir = normalize(-direction);
+	vec3 lightDir = normalize(-ToTangenSpaceVector(direction)); //light 방향을 tangent space로 변환
 	float diffuseFactor = max(dot(normal, lightDir), 0.0);
 	vec3 lightDiffuse = light.lightColor * light.diffuseIntensity * diffuseFactor;
 
-	vec3 fragToEye = normalize(u_EyePosition - v_WorldPosition);
+	vec3 fragToEye = normalize(ToTangenSpaceVector(u_EyePosition - v_WorldPosition)); //view 방향을 tangent space로 변환
 	vec3 rVec = 2.0 * normal * dot(normal, lightDir) - lightDir; //r vector 계산
 	vec3 lightSpecular = pow(max(dot(rVec, fragToEye), 0.0), u_Material.shininess) * light.lightColor * u_Material.specularIntensity;
 
