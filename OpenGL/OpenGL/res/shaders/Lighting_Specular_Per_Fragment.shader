@@ -64,16 +64,14 @@ uniform Material u_Material;
 //빛 기본 정보와 방향이 주어졌을 때, rendering eqn에 따른 색상 계산
 vec3 CalcLight(Light light, vec3 direction)
 {
-	vec3 normal = normalize(v_Normal); //법선 벡터 normalize 필요! (안할 경우 76 line에서 잘못 계산됨)
-	
 	vec3 lightAmbient = light.lightColor * light.ambientIntensity;
-	
+
 	vec3 lightDir = normalize(-direction);
-	float diffuseFactor = max(dot(normal, lightDir), 0.0);
+	float diffuseFactor = max(dot(normalize(v_Normal), lightDir), 0.0);
 	vec3 lightDiffuse = light.lightColor * light.diffuseIntensity * diffuseFactor;
 
 	vec3 fragToEye = normalize(u_EyePosition - v_WorldPosition);
-	vec3 rVec = 2.0 * normal * dot(normal, lightDir) - lightDir; //r vector 계산
+	vec3 rVec = 2.0 * v_Normal * dot(v_Normal, lightDir) - lightDir; //r vector 계산
 	vec3 lightSpecular = pow(max(dot(rVec, fragToEye), 0.0), u_Material.shininess) * light.lightColor * u_Material.specularIntensity;
 
 	return (lightAmbient + lightDiffuse + lightSpecular); //light와 direction에 의한 light color 반환

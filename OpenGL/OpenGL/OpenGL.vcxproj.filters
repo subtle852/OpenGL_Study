@@ -60,6 +60,9 @@
     <ClCompile Include="src\DirectionalLight.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
+    <ClCompile Include="src\ShadowMap.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="src\vendor\glm\detail\func_common.inl">
@@ -390,6 +393,9 @@
       <Filter>헤더 파일</Filter>
     </None>
     <None Include="assimp-vc140-mt.dll" />
+    <None Include="res\shaders\DirectionalShadowMap.shader" />
+    <None Include="res\shaders\DepthMapVisualize.shader" />
+    <None Include="res\shaders\Lighting_Specular_Per_Fragment.shader" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\Renderer.h">
@@ -860,10 +866,10 @@
     <ClInclude Include="src\Material.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
-    <ClInclude Include="res\shaders\Lighting_Specular_Per_Fragment.shader">
+    <ClInclude Include="src\DirectionalLight.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
-    <ClInclude Include="src\DirectionalLight.h">
+    <ClInclude Include="src\ShadowMap.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
   </ItemGroup>
