@@ -44,6 +44,8 @@
 
 
 6. 내부 스크린샷:
+
+
 ![image](https://github.com/subtle852/OpenGL_Study/assets/125884023/9f7027cb-ea4e-49f2-94da-cccc96fac24c)
 
 
